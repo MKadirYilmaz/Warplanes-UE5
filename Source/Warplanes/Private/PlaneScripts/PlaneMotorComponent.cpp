@@ -34,7 +34,7 @@ void UPlaneMotorComponent::ConsumeFuel(float& OutCurrentFuel)
 	}
 	else
 	{
-		OutCurrentFuel -= CurrentEnginePower / FuelEfficiency;
+		OutCurrentFuel -= CurrentEnginePower / (FuelEfficiency * 100.f); // 100.f = additional efficiency
 	}
 }
 

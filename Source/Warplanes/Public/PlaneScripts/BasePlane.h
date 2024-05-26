@@ -37,6 +37,8 @@ protected:
 	void RotateUpwards(float Value);
 	void RotateRight(float Value);
 	void ChangeEnginePower(float Value);
+	void CameraUp(float Value);
+	void CameraRight(float Value);
 
 	void MoveForward(float DeltaTime);
 
@@ -46,6 +48,8 @@ protected:
 	float GetPlaneTotalMass();
 	float GetPlaneTotalEnginePower();
 
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	UCameraComponent* CockpitCamera;
 
 	UPROPERTY(EditAnywhere, Category = "Plane Setup")
 	UPlaneBodyComponent* PlaneBody;
@@ -67,15 +71,28 @@ protected:
 	// Equipped fuel mass
 	float EquippedFuelAmount = 100.f;
 	
+	UPROPERTY(EditAnywhere)
+	// Cockpit camera rotation limitation. Only pitch and yaw will be used
+	FRotator CameraRotationClamp = FRotator(60.f, 60.f, 0.f);
+
+	UPROPERTY(EditAnywhere)
+	// Lock cockpit camera rotation
+	bool CockpitCameraLock = false;
+
+
 	UPROPERTY(EditAnywhere, Category = "Component Class Setup")
 	TSubclassOf<UPlaneMotorComponent> MotorClass;
 
 	UPROPERTY(EditAnywhere, Category = "Component Class Setup")
 	TSubclassOf<UGunComponent> GunClass;
 
+	float DeltaPitch, DeltaRoll;
+	float CameraPitch, CameraYaw;
 
 	float TotalMass = 0.f;
 	float TotalRightEnginePower, TotalLeftEnginePower, MidEnginePower;
+
+	float DeltaSeconds;
 
 	FTimerHandle MassRecalculator;
 

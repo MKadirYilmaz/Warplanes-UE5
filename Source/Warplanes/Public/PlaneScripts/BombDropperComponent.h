@@ -47,7 +47,7 @@ protected:
 	float BombLaunchDelayDuration = 0.5f;
 
 	UPROPERTY(EditAnywhere)
-	float RealMass = 1.f;
+	float RealMass = 50.f;
 
 	FTimerHandle BombLaunchDelayer;
 

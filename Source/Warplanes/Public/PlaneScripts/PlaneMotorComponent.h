@@ -48,10 +48,13 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	// Determines how efficient the motor is. Higher values means lower fuel consumption
-	float FuelEfficiency = 1.f;
+	float FuelEfficiency = 100.f;
 	UPROPERTY(EditAnywhere)
 	// Max motor health
 	float MotorDurability = 100.f;
+
+	UPROPERTY(EditAnywhere)
+	float RealMass = 150.f;
 
 	float CurrentEnginePower = 0.f;
 	float CurrentMotorDurability = MotorDurability;
@@ -63,6 +66,7 @@ public:
 
 	FORCEINLINE float GetCurrentMotorDurability() const { return CurrentMotorDurability; }
 	FORCEINLINE float GetCurrentEnginePower() const { return CurrentEnginePower; }
+	FORCEINLINE float GetRealMass() const { return RealMass; }
 	FORCEINLINE EMotorPosition GetMotorPosition() const { return MotorPosition; }
 
 

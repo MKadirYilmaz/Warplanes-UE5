@@ -6,6 +6,7 @@
 #include "PlaneScripts/GunComponent.h"
 #include "PlaneScripts/PlaneMotorComponent.h"
 #include "PlaneScripts/BombDropperComponent.h"
+#include "Camera/CameraComponent.h"
 
 
 // Sets default values
@@ -16,6 +17,9 @@ ABasePlane::ABasePlane()
 
 	PlaneBody = CreateDefaultSubobject<UPlaneBodyComponent>(TEXT("PlaneBody"));
 	RootComponent = PlaneBody;
+
+	CockpitCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("CockpitCamera"));
+	CockpitCamera->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -47,6 +51,7 @@ void ABasePlane::BeginPlay()
 void ABasePlane::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	DeltaSeconds = DeltaTime;
 
 	RecalculateTotalMass();
 
@@ -57,6 +62,9 @@ void ABasePlane::Tick(float DeltaTime)
 		_Motor->ConsumeFuel(EquippedFuelAmount);
 	}
 	MoveForward(DeltaTime);
+	PlaneBody->AddLocalRotation(FRotator(DeltaPitch, 0, DeltaRoll));
+	if(!CockpitCameraLock)
+		CockpitCamera->SetRelativeRotation(FRotator(CameraPitch, CameraYaw, CockpitCamera->GetRelativeRotation().Roll));
 }
 
 // Called to bind functionality to input
@@ -67,16 +75,20 @@ void ABasePlane::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis(TEXT("RotateUp"), this, &ABasePlane::RotateUpwards);
 	PlayerInputComponent->BindAxis(TEXT("RotateRight"), this, &ABasePlane::RotateRight);
 	PlayerInputComponent->BindAxis(TEXT("ChangeEnginePower"), this, &ABasePlane::ChangeEnginePower);
+
+	PlayerInputComponent->BindAxis(TEXT("CameraMouseUp"), this, &ABasePlane::CameraUp);
+	PlayerInputComponent->BindAxis(TEXT("CameraMouseRight"), this, &ABasePlane::CameraRight);
+
 }
 
 void ABasePlane::RotateUpwards(float Value)
 {
-	PlaneBody->AddLocalRotation(FRotator(PlaneBody->GetTurningSpeedMultiplier() / TotalMass, 0, 0));
+	DeltaPitch = (PlaneBody->GetTurningSpeedMultiplier() * Value * DeltaSeconds * 1000.f) / TotalMass;
 }
 
 void ABasePlane::RotateRight(float Value)
 {
-	PlaneBody->AddLocalRotation(FRotator(PlaneBody->GetRollRotationMultiplier() / TotalMass, 0, 0));
+	DeltaRoll = (PlaneBody->GetRollRotationMultiplier() * Value * DeltaSeconds * 1000.f) / TotalMass;
 }
 
 void ABasePlane::ChangeEnginePower(float Value)
@@ -87,6 +99,18 @@ void ABasePlane::ChangeEnginePower(float Value)
 			continue;
 		_Motor->AddCurrentEnginePower(Value);
 	}
+}
+
+void ABasePlane::CameraUp(float Value)
+{
+	CameraPitch += Value;
+	CameraPitch = FMath::Clamp(CameraPitch, -CameraRotationClamp.Pitch, CameraRotationClamp.Pitch);
+}
+
+void ABasePlane::CameraRight(float Value)
+{
+	CameraYaw += Value;
+	CameraYaw = FMath::Clamp(CameraYaw, -CameraRotationClamp.Yaw, CameraRotationClamp.Yaw);
 }
 
 void ABasePlane::MoveForward(float DeltaTime)
@@ -113,13 +137,13 @@ float ABasePlane::GetPlaneTotalMass()
 	{
 		if (!_Motor)
 			continue;
-		_Mass += _Motor->GetMass();
+		_Mass += _Motor->GetRealMass();
 	}
 	for (UGunComponent* _Gun : TiedGuns) // Add gun masses to total mass
 	{
 		if (!_Gun)
 			continue;
-		_Mass += _Gun->GetMass();
+		_Mass += _Gun->GetRealMass();
 	}
 	if (TiedBombDropper) // Add bomb dropper and all tied bombs masses to total mass
 	{

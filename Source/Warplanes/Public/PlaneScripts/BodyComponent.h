@@ -37,7 +37,7 @@ protected:
 	float TotalDurability = 0.f;
 
 	UPROPERTY(EditAnywhere)
-	float RealMass = 1.f;
+	float RealMass = 500.f;
 
 
 	float CurrentDurability = TotalDurability;
