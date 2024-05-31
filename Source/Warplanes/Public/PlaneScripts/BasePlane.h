@@ -67,6 +67,13 @@ protected:
 	// When right engines total power is not equal to left engines total power plane will rotate because of unbalanced forces.
 	float EngineForceBalanceFactor = 1.f;
 
+	UPROPERTY(EditAnywhere, Category = "Plane Movement Adjustments")
+	float PlaneSlowMultiplier = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "Plane Movement Adjustments")
+	float PlaneAccelerationMultiplier = 2.f;
+
+
 	UPROPERTY(EditAnywhere)
 	// Equipped fuel mass
 	float EquippedFuelAmount = 100.f;
@@ -92,8 +99,8 @@ protected:
 	float TotalMass = 0.f;
 	float TotalRightEnginePower, TotalLeftEnginePower, MidEnginePower;
 
-	float DeltaSeconds;
+	FVector ForwardForce = FVector(0,0,0);
 
-	FTimerHandle MassRecalculator;
+	float DeltaSeconds;
 
 };

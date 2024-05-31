@@ -61,9 +61,9 @@ void ABasePlane::Tick(float DeltaTime)
 			continue;
 		_Motor->ConsumeFuel(EquippedFuelAmount);
 	}
-	MoveForward(DeltaTime);
-	PlaneBody->AddLocalRotation(FRotator(DeltaPitch, 0, DeltaRoll));
-	if(!CockpitCameraLock)
+	MoveForward(DeltaTime); // Plane position
+	PlaneBody->AddLocalRotation(FRotator(DeltaPitch, 0, DeltaRoll)); // Plane rotation
+	if(!CockpitCameraLock) // Player camera control
 		CockpitCamera->SetRelativeRotation(FRotator(CameraPitch, CameraYaw, CockpitCamera->GetRelativeRotation().Roll));
 }
 
@@ -115,8 +115,18 @@ void ABasePlane::CameraRight(float Value)
 
 void ABasePlane::MoveForward(float DeltaTime)
 {
-	float _EnginePowers = GetPlaneTotalEnginePower();
-	PlaneBody->AddWorldOffset(PlaneBody->GetForwardVector() * _EnginePowers * DeltaTime);
+	FVector _TargetForce = PlaneBody->GetForwardVector() * GetPlaneTotalEnginePower();
+
+	// If the plane is slowing down then _InterpSpeed will speed up the slowing process. Otherwise it will make harder the plane to speed up.
+	float _InterpSpeed = (_TargetForce.Length() < ForwardForce.Length()) ? PlaneBody->GetSurfaceResistanceMultiplier() * PlaneSlowMultiplier :
+		1 / PlaneBody->GetSurfaceResistanceMultiplier() * PlaneAccelerationMultiplier;
+
+	ForwardForce = FMath::VInterpTo(ForwardForce, _TargetForce, DeltaTime, _InterpSpeed);
+	
+	FVector _UpliftingForce = FVector(0, 0, FMath::Pow(ForwardForce.Length(), 2) - TotalMass * 10.f);
+	_UpliftingForce.Z = FMath::Clamp(_UpliftingForce.Z, -1000.f, 10.f);
+
+	PlaneBody->AddWorldOffset((ForwardForce + _UpliftingForce) * DeltaTime);
 }
 
 void ABasePlane::RotatePlaneToBalance()
