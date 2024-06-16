@@ -2,6 +2,7 @@
 
 
 #include "PlaneScripts/GunComponent.h"
+#include "PlaneScripts/Bullet.h"
 #include "Kismet/GameplayStatics.h"
 
 UGunComponent::UGunComponent()
@@ -34,5 +35,8 @@ void UGunComponent::FireGun()
 	// Final bullet speed and direction vector
 	FVector _BulletForce = _Direction * GunFirePower;
 
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), GunFireSound, GetComponentLocation());
+	GetWorld()->SpawnActor<ABullet>(GetComponentLocation() + GetForwardVector() * 10.f, GetComponentRotation());
+	if(GunFireSound)
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), GunFireSound, GetComponentLocation());
+
 }

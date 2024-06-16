@@ -34,6 +34,12 @@ protected:
 	float TurningSpeedMultiplier = 5.f;
 
 	UPROPERTY(EditAnywhere)
+	float RollRotationInterpSpeed = 3.4f;
+
+	UPROPERTY(EditAnywhere)
+	float TurningInterpSpeed = 2.7f;
+
+	UPROPERTY(EditAnywhere)
 	float SurfaceResistanceMultiplier = 2.f;
 
 public:
@@ -41,5 +47,7 @@ public:
 	FORCEINLINE float GetRollRotationMultiplier() const { return RollRotationSpeedMultiplier; }
 	FORCEINLINE float GetTurningSpeedMultiplier() const { return TurningSpeedMultiplier; }
 	FORCEINLINE float GetSurfaceResistanceMultiplier() const { return SurfaceResistanceMultiplier; }
+	FORCEINLINE float GetRollRotationInterpSpeed() const { return RollRotationInterpSpeed; }
+	FORCEINLINE float GetTurningInterpSpeed() const { return TurningInterpSpeed; }
 
 };

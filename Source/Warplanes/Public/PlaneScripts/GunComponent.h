@@ -25,10 +25,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void FireGun();
+
 protected:
 
-	void FireGun();
-	
 	UPROPERTY(EditAnywhere)
 	// Milimeter sized bullets
 	float BulletSize = 7.68f;
@@ -53,6 +53,7 @@ protected:
 
 public:
 	FORCEINLINE float GetRealMass() const { return RealMass; }
+	FORCEINLINE float GetFireRate() const { return FireRate; }
 
 
 };

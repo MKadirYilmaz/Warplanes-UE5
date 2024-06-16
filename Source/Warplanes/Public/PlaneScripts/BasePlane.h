@@ -40,6 +40,8 @@ protected:
 	void CameraUp(float Value);
 	void CameraRight(float Value);
 
+	void FireAllBullets();
+
 	void MoveForward(float DeltaTime);
 
 	void RotatePlaneToBalance();
@@ -73,7 +75,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Plane Movement Adjustments")
 	float PlaneAccelerationMultiplier = 2.f;
 
-
 	UPROPERTY(EditAnywhere)
 	// Equipped fuel mass
 	float EquippedFuelAmount = 100.f;
@@ -86,12 +87,13 @@ protected:
 	// Lock cockpit camera rotation
 	bool CockpitCameraLock = false;
 
-
 	UPROPERTY(EditAnywhere, Category = "Component Class Setup")
 	TSubclassOf<UPlaneMotorComponent> MotorClass;
 
 	UPROPERTY(EditAnywhere, Category = "Component Class Setup")
 	TSubclassOf<UGunComponent> GunClass;
+
+	TArray<FTimerHandle> GunFireHandlers;
 
 	float DeltaPitch, DeltaRoll;
 	float CameraPitch, CameraYaw;
@@ -99,7 +101,8 @@ protected:
 	float TotalMass = 0.f;
 	float TotalRightEnginePower, TotalLeftEnginePower, MidEnginePower;
 
-	FVector ForwardForce = FVector(0,0,0);
+	FVector ForwardForce = FVector(0, 0, 0);
+	FVector UpliftingForce = FVector(0, 0, 0);
 
 	float DeltaSeconds;
 

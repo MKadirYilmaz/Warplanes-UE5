@@ -79,16 +79,18 @@ void ABasePlane::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis(TEXT("CameraMouseUp"), this, &ABasePlane::CameraUp);
 	PlayerInputComponent->BindAxis(TEXT("CameraMouseRight"), this, &ABasePlane::CameraRight);
 
+	PlayerInputComponent->BindAction(TEXT("FireAll"), IE_Pressed, this, &ABasePlane::FireAllBullets);
+
 }
 
 void ABasePlane::RotateUpwards(float Value)
 {
-	DeltaPitch = (PlaneBody->GetTurningSpeedMultiplier() * Value * DeltaSeconds * 1000.f) / TotalMass;
+	DeltaPitch = FMath::FInterpTo(DeltaPitch, (PlaneBody->GetTurningSpeedMultiplier() * Value * DeltaSeconds * 1000.f) / TotalMass, DeltaSeconds, PlaneBody->GetTurningInterpSpeed());
 }
 
 void ABasePlane::RotateRight(float Value)
 {
-	DeltaRoll = (PlaneBody->GetRollRotationMultiplier() * Value * DeltaSeconds * 1000.f) / TotalMass;
+	DeltaRoll = FMath::FInterpTo(DeltaRoll, (PlaneBody->GetRollRotationMultiplier() * Value * DeltaSeconds * 1000.f) / TotalMass, DeltaSeconds, PlaneBody->GetRollRotationInterpSpeed());
 }
 
 void ABasePlane::ChangeEnginePower(float Value)
@@ -113,6 +115,17 @@ void ABasePlane::CameraRight(float Value)
 	CameraYaw = FMath::Clamp(CameraYaw, -CameraRotationClamp.Yaw, CameraRotationClamp.Yaw);
 }
 
+void ABasePlane::FireAllBullets()
+{
+	for (int32 i = 0; i < TiedGuns.Num(); i++)
+	{
+		if (TiedGuns[i] && GunFireHandlers.Num() > i && !GetWorldTimerManager().IsTimerActive(GunFireHandlers[i]))
+		{
+			//GetWorldTimerManager().SetTimer(GunFireHandlers[i], this, &TiedGuns[i]FireGun(), TiedGuns[i]->GetFireRate());
+		}
+	}
+}
+
 void ABasePlane::MoveForward(float DeltaTime)
 {
 	FVector _TargetForce = PlaneBody->GetForwardVector() * GetPlaneTotalEnginePower();
@@ -123,10 +136,15 @@ void ABasePlane::MoveForward(float DeltaTime)
 
 	ForwardForce = FMath::VInterpTo(ForwardForce, _TargetForce, DeltaTime, _InterpSpeed);
 	
-	FVector _UpliftingForce = FVector(0, 0, FMath::Pow(ForwardForce.Length(), 2) - TotalMass * 10.f);
-	_UpliftingForce.Z = FMath::Clamp(_UpliftingForce.Z, -1000.f, 10.f);
+	UpliftingForce = FMath::VInterpTo(UpliftingForce, FVector(0, 0, FMath::Clamp(FMath::Pow(ForwardForce.Length(), 2) - TotalMass * 10.f * 25.f, -10000.f, 10.f) / 25), DeltaTime, 2.f);
+	UE_LOG(LogTemp, Display, TEXT("Current uplifting force: %f"), UpliftingForce.Z);
 
-	PlaneBody->AddWorldOffset((ForwardForce + _UpliftingForce) * DeltaTime);
+	FHitResult _HitResult;
+	PlaneBody->AddWorldOffset((ForwardForce + UpliftingForce) * DeltaTime, true, &_HitResult);
+	if (_HitResult.GetActor())
+	{
+		ForwardForce = FVector::ZeroVector;
+	}
 }
 
 void ABasePlane::RotatePlaneToBalance()
