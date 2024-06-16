@@ -1,0 +1,3 @@
+This project is currently under development. Developing since May 2024...
+
+This game is a quest based warplane simulation game. The player will complete the missions and try to complete more challenging missions by improving his plane.
